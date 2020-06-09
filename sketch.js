@@ -1,12 +1,14 @@
 // p5iano
 
-let game_title = "* p5iano * c3.3"
-let [canvas_W, canvas_H] = [600, 240];
+let game_title = "* p5iano * c4.6"
+let [canvas_W, canvas_H] = [600, 300];
 let key_X = [];
 let key_Y = [];
-let key_W = 80;
-let key_H = 200;
-let key_RGB = [240, 240, 240];
+let key_W = [];
+let key_H = canvas_H - 100;
+let w_key_RGB = [240, 240, 240];
+let b_key_RGB = [40, 40, 40];
+let black_key_offset = [0, 1, 3, 4, 5];
 let is_key_on = [];
 let background_RGB = [130, 230 ,230];
 let on_RGB = [250, 250, 250, 150];
@@ -24,25 +26,39 @@ function setup() {
   window.addEventListener("touchmove",  function (event) { event.preventDefault(); }, { passive: false });
   createCanvas(canvas_W, canvas_H);
   rectMode(CENTER);
-  for (let i = 0; i < 7; i++) {
-    key_X[i] = key_W / 2 + 2 + canvas_W * i / 7;
-    key_Y[i] = key_H / 2;
+  for (let i = 0; i < 12; i++) {
     is_key_on[i] = 0;
-//    osc[i] = new p5.TriOsc();
-//    osc[i] = new p5.Oscillator('sine');
-//    osc[i] = new p5.Oscillator('triangle');
-    osc[i] = new p5.Oscillator('sawtooth');
-//    osc[i] = new p5.Oscillator('square');
-    osc[i].amp(amp_vol);
-    osc[i].freq(scale_w[i]);
+    if (i < 7) {
+      key_W[i] = 80;
+      key_X[i] = key_W[0] / 2 + 2 + canvas_W * i / 7;
+      key_Y[i] = key_H / 2;
+  //    osc[i] = new p5.TriOsc();
+  //    osc[i] = new p5.Oscillator('sine');
+  //    osc[i] = new p5.Oscillator('triangle');
+  //    osc[i] = new p5.Oscillator('sawtooth');
+      osc[i] = new p5.Oscillator('square');
+      osc[i].amp(amp_vol);
+      osc[i].freq(scale_w[i]);
+    } else {
+      key_W[i] = 60;
+      key_X[i] = key_W[0] + 2 + canvas_W * black_key_offset[i-7] / 7;
+      key_Y[i] = key_H / 4;
+      osc[i] = new p5.Oscillator('square');
+      osc[i].amp(amp_vol);
+      osc[i].freq(scale_b[i-7]);
+    }
   }
 }
 
 function draw() {
   background(background_RGB[0], background_RGB[1], background_RGB[2]);
   set_game_title();
-  for (let i = 0; i < 7; i++) {
-    set_key(key_RGB[0], key_RGB[1], key_RGB[2], key_X[i], key_Y[i], key_W, key_H, is_key_on[i]);
+  for (let i = 0; i < 12; i++) {
+    if (i<7) {
+      set_key(w_key_RGB[0], w_key_RGB[1], w_key_RGB[2], key_X[i], key_Y[i], key_W[i], key_H, is_key_on[i]);
+    } else {
+      set_key(b_key_RGB[0], b_key_RGB[1], b_key_RGB[2], key_X[i], key_Y[i], key_W[i], key_H, is_key_on[i]);
+    }
   }
   if (1 == is_touch) {
     touched();
@@ -70,14 +86,16 @@ function touchEnded() {
   is_touch = 0;
 }
 function mousePressed() {
-  for (let i=0; i < 7; i++) {
-    if ((key_X[i] - key_W / 2 < mouseX && mouseX < key_X[i] + key_W / 2) && (key_Y[i] - key_H / 2 < mouseY && mouseY < key_Y[i] + key_H / 2)) {
+  for (let i=11; i >= 0; i--) {
+    if ((key_X[i] - key_W[i] / 2 < mouseX && mouseX < key_X[i] + key_W[i] / 2) && (key_Y[i] - key_H / 2 < mouseY && mouseY < key_Y[i] + key_H / 2)) {
       if (is_key_on[i]) {
         is_key_on[i] = 0;
         sound_off(osc[i]);
+        break;
       } else {
         is_key_on[i] = 1;
         sound_on(osc[i]);
+        break;
       }
     }
   }
